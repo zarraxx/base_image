@@ -13,8 +13,6 @@ int main(void) {
     return 0;
 }
 EOF
-ls
 /opt/msvc/bin/x64/cl /nologo hello.c
-ls
 wine ./hello.exe
 '
