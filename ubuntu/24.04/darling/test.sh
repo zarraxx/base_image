@@ -11,7 +11,7 @@ DOCKER_CMD="${DOCKER_CMD:-docker}"
 #   exit 0
 # fi
 
-$DOCKER_CMD  run --rm -it \
+$DOCKER_CMD  run --rm \
   --privileged \
   --userns=host \
   --security-opt seccomp=unconfined \
