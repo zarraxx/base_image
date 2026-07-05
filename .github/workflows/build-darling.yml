@@ -1,0 +1,78 @@
+name: Build Darling Image
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "ubuntu/24.04/darling/**"
+      - ".github/workflows/build-darling.yml"
+  pull_request:
+    paths:
+      - "ubuntu/24.04/darling/**"
+      - ".github/workflows/build-darling.yml"
+  workflow_dispatch:
+    inputs:
+      darling_tag:
+        description: Darling image tag
+        required: true
+        default: noble-20260608
+        type: string
+      darling_deb_url:
+        description: Darling debs zip URL
+        required: true
+        default: https://github.com/darlinghq/darling/releases/download/v0.1.20260608/debs_20260608.zip
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: darling
+  DARLING_TAG: ${{ github.event.inputs.darling_tag || 'noble-20260608' }}
+  DARLING_DEB_URL: ${{ github.event.inputs.darling_deb_url || 'https://github.com/darlinghq/darling/releases/download/v0.1.20260608/debs_20260608.zip' }}
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-darling-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: darling
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set image names
+        id: image
+        shell: bash
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "local=${IMAGE_NAME}:${DARLING_TAG}" >> "${GITHUB_OUTPUT}"
+          echo "remote=${REGISTRY}/${owner}/${IMAGE_NAME}:${DARLING_TAG}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build image
+        working-directory: ubuntu/24.04/darling
+        run: ./build.sh "${{ steps.image.outputs.local }}" "${DARLING_DEB_URL}"
+
+      - name: Test image
+        working-directory: ubuntu/24.04/darling
+        run: ./test.sh "${{ steps.image.outputs.local }}"
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push image
+        if: github.event_name != 'pull_request'
+        run: |
+          docker tag "${{ steps.image.outputs.local }}" "${{ steps.image.outputs.remote }}"
+          docker push "${{ steps.image.outputs.remote }}"

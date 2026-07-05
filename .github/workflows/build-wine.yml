@@ -1,0 +1,66 @@
+name: Build Wine Image
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "debian/12/wine/**"
+      - ".github/workflows/build-wine.yml"
+  pull_request:
+    paths:
+      - "debian/12/wine/**"
+      - ".github/workflows/build-wine.yml"
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: wine
+  IMAGE_TAG: debian-12
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-wine-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: wine
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set image names
+        id: image
+        shell: bash
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "local=${IMAGE_NAME}:${IMAGE_TAG}" >> "${GITHUB_OUTPUT}"
+          echo "remote=${REGISTRY}/${owner}/${IMAGE_NAME}:${IMAGE_TAG}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build image
+        working-directory: debian/12/wine
+        run: ./build.sh
+
+      - name: Test image
+        working-directory: debian/12/wine
+        run: ./test.sh "${{ steps.image.outputs.local }}"
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push image
+        if: github.event_name != 'pull_request'
+        run: |
+          docker tag "${{ steps.image.outputs.local }}" "${{ steps.image.outputs.remote }}"
+          docker push "${{ steps.image.outputs.remote }}"

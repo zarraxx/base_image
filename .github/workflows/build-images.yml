@@ -7,12 +7,12 @@ on:
       - master
     paths:
       - "centos/**"
-      - "debian/**"
+      - "debian/10/aliyun/**"
       - ".github/workflows/build-images.yml"
   pull_request:
     paths:
       - "centos/**"
-      - "debian/**"
+      - "debian/10/aliyun/**"
       - ".github/workflows/build-images.yml"
   workflow_dispatch:
     inputs:
