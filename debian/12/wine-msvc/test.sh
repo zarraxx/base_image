@@ -1,9 +1,17 @@
+#!/bin/bash
+set -e
+
 IMAGE_NAME="${1:-wine:msvc}"
 DOCKER_CMD="${DOCKER_CMD:-docker}"
 
-$DOCKER_CMD run --rm -it \
+TTY_ARGS=""
+if [ -t 0 ]; then
+  TTY_ARGS="-it"
+fi
+
+$DOCKER_CMD run --rm ${TTY_ARGS} \
   -e WINEDEBUG=-all \
-  ${IMAGE_NAME} \
+  "${IMAGE_NAME}" \
   bash -lc '
 cat > hello.c <<EOF
 #include <stdio.h>
