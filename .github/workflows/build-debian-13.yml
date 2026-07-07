@@ -42,8 +42,6 @@ jobs:
             platform: linux/arm/v7
           - suffix: arm64v8
             platform: linux/arm64/v8
-          - suffix: mips64le
-            platform: linux/mips64le
           - suffix: ppc64le
             platform: linux/ppc64le
           - suffix: riscv64
@@ -126,11 +124,50 @@ jobs:
           docker tag "${{ steps.image.outputs.local }}" "${{ steps.image.outputs.remote }}"
           docker push "${{ steps.image.outputs.remote }}"
 
+  build-mips64le:
+    name: debian-13-mips64le
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set image names
+        id: image
+        shell: bash
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "repo=${REGISTRY}/${owner}/${IMAGE_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "local=localhost/${IMAGE_NAME}:${IMAGE_TAG_TRIXIE}-mips64le" >> "${GITHUB_OUTPUT}"
+          echo "remote=${REGISTRY}/${owner}/${IMAGE_NAME}:${IMAGE_TAG_TRIXIE}-mips64le" >> "${GITHUB_OUTPUT}"
+
+      - name: Build mips64le image
+        working-directory: debian/13/mips64le
+        run: ./build.sh
+
+      - name: Test mips64le image
+        run: docker run --rm --platform linux/mips64le "${{ steps.image.outputs.local }}" /bin/sh -lc 'uname -m && python3 --version && git --version'
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push mips64le image
+        if: github.event_name != 'pull_request'
+        run: |
+          docker tag "${{ steps.image.outputs.local }}" "${{ steps.image.outputs.remote }}"
+          docker push "${{ steps.image.outputs.remote }}"
+
   publish-manifest:
     name: debian-13-manifest
     runs-on: ubuntu-latest
     needs:
       - build-official
+      - build-mips64le
       - build-loong64
     if: github.event_name != 'pull_request'
 
