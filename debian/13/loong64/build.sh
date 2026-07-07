@@ -33,6 +33,8 @@ if [ ! -e /proc/sys/fs/binfmt_misc/qemu-loongarch64 ]; then
   sudo sh -c 'cat /usr/share/qemu/binfmt.d/qemu-loongarch64.conf > /proc/sys/fs/binfmt_misc/register'
 fi
 
+QEMU_BIN=$(command -v qemu-loongarch64)
+
 curl -fsSL "${KEY_URL}" -o "${TMP_DIR}/loong64-archive.key"
 ACTUAL_FINGERPRINT=$(gpg --show-keys --with-colons "${TMP_DIR}/loong64-archive.key" 2>/dev/null | awk -F: '$1 == "fpr" { print $10; exit }')
 
@@ -56,6 +58,7 @@ sudo debootstrap \
   "${ROOTFS}" \
   "${MIRROR}"
 
+sudo cp "${QEMU_BIN}" "${ROOTFS}/usr/bin/"
 sudo chroot "${ROOTFS}" /debootstrap/debootstrap --second-stage
 
 sudo tee "${ROOTFS}/etc/apt/sources.list" >/dev/null <<EOF
@@ -76,6 +79,7 @@ sudo chroot "${ROOTFS}" env DEBIAN_FRONTEND=noninteractive apt-get install -y --
   bzip2 \
   file
 sudo chroot "${ROOTFS}" rm -rf /var/lib/apt/lists/*
+sudo rm -f "${ROOTFS}/usr/bin/$(basename "${QEMU_BIN}")"
 
 if command -v podman >/dev/null 2>&1; then
   sudo tar -C "${ROOTFS}" -c . | podman import --arch loong64 --os linux - "${IMAGE_TAG}"
