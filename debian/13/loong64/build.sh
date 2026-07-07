@@ -15,7 +15,12 @@ cleanup() {
 }
 trap cleanup EXIT
 
-sudo apt install -y ca-certificates curl debootstrap gpg qemu-user qemu-user-binfmt binfmt-support
+QEMU_PACKAGES=(qemu-user qemu-user-binfmt)
+if apt-cache policy qemu-user-static | awk '/Candidate:/ { exit ($2 == "(none)") }'; then
+  QEMU_PACKAGES=(qemu-user-static)
+fi
+
+sudo apt install -y ca-certificates curl debootstrap gpg binfmt-support "${QEMU_PACKAGES[@]}"
 
 if command -v update-binfmts >/dev/null 2>&1; then
   sudo update-binfmts --enable qemu-loongarch64 || true
@@ -33,7 +38,7 @@ if [ ! -e /proc/sys/fs/binfmt_misc/qemu-loongarch64 ]; then
   sudo sh -c 'cat /usr/share/qemu/binfmt.d/qemu-loongarch64.conf > /proc/sys/fs/binfmt_misc/register'
 fi
 
-QEMU_BIN=$(command -v qemu-loongarch64)
+QEMU_BIN=$(command -v qemu-loongarch64-static || command -v qemu-loongarch64)
 
 curl -fsSL "${KEY_URL}" -o "${TMP_DIR}/loong64-archive.key"
 ACTUAL_FINGERPRINT=$(gpg --show-keys --with-colons "${TMP_DIR}/loong64-archive.key" 2>/dev/null | awk -F: '$1 == "fpr" { print $10; exit }')
