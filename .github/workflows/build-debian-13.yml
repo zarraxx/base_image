@@ -108,21 +108,17 @@ jobs:
         run: ./build.sh
 
       - name: Test loong64 image
-        run: docker run --rm --platform linux/loong64 "${{ steps.image.outputs.local }}" /bin/sh -lc 'uname -m && python3 --version && git --version'
+        run: podman run --rm --platform linux/loong64 "${{ steps.image.outputs.local }}" /bin/sh -lc 'uname -m && python3 --version && git --version'
 
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GH_KEY }}
+        run: echo "${{ secrets.GH_KEY }}" | podman login "${REGISTRY}" --username "${{ github.repository_owner }}" --password-stdin
 
       - name: Push loong64 image
         if: github.event_name != 'pull_request'
         run: |
-          docker tag "${{ steps.image.outputs.local }}" "${{ steps.image.outputs.remote }}"
-          docker push "${{ steps.image.outputs.remote }}"
+          podman tag "${{ steps.image.outputs.local }}" "${{ steps.image.outputs.remote }}"
+          podman push "${{ steps.image.outputs.remote }}"
 
   publish-manifest:
     name: debian-13-manifest
