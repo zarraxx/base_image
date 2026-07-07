@@ -54,7 +54,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PATH="/opt/osxcross/bin:${PATH}"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    clang \
+    clang make cmake git curl wget python3 patch bash build-essential ninja meson \
     file \
     lld \
     libc6-dev \
