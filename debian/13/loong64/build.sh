@@ -86,11 +86,27 @@ sudo chroot "${ROOTFS}" env DEBIAN_FRONTEND=noninteractive apt-get install -y --
 sudo chroot "${ROOTFS}" rm -rf /var/lib/apt/lists/*
 sudo rm -f "${ROOTFS}/usr/bin/$(basename "${QEMU_BIN}")"
 
-if command -v podman >/dev/null 2>&1; then
-  sudo tar -C "${ROOTFS}" -c . | podman import --arch loong64 --os linux - "${IMAGE_TAG}"
-else
-  sudo tar -C "${ROOTFS}" -c . | docker import --platform linux/loong64 - "${IMAGE_TAG}"
+CONTAINER_TOOL="${CONTAINER_TOOL:-}"
+if [ -z "${CONTAINER_TOOL}" ]; then
+  if command -v podman >/dev/null 2>&1; then
+    CONTAINER_TOOL=podman
+  else
+    CONTAINER_TOOL=docker
+  fi
 fi
 
+case "${CONTAINER_TOOL}" in
+  podman)
+    sudo tar -C "${ROOTFS}" -c . | podman import --arch loong64 --os linux - "${IMAGE_TAG}"
+    ;;
+  docker)
+    sudo tar -C "${ROOTFS}" -c . | docker import --platform linux/loong64 - "${IMAGE_TAG}"
+    ;;
+  *)
+    echo "Unsupported CONTAINER_TOOL: ${CONTAINER_TOOL}" >&2
+    exit 1
+    ;;
+esac
+
 echo "Imported ${IMAGE_TAG}"
-echo "Run with: podman run --rm --platform linux/loong64 -it ${IMAGE_TAG} /bin/bash"
+echo "Run with: ${CONTAINER_TOOL} run --rm --platform linux/loong64 -it ${IMAGE_TAG} /bin/bash"
