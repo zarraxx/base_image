@@ -19,11 +19,14 @@ RUN \
     echo "==> STEP 2: Installing ca-certificates..." && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        git \
+        bash\
         curl wget \
         ca-certificates \
-        python3 \
-        python3-setuptools \
+        iputils-ping \
+        telnet \
+        ftp \
+        net-tools iproute2 \
+        procps \
         xz-utils \
         unzip \
         zip \

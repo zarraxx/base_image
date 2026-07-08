@@ -1,0 +1,62 @@
+name: Build Loong64 OpenJDK Debs
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "debian/13/loong64/openjdk/**"
+      - ".github/workflows/build-loong64-openjdk.yml"
+  pull_request:
+    paths:
+      - "debian/13/loong64/openjdk/**"
+      - ".github/workflows/build-loong64-openjdk.yml"
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: Space-separated OpenJDK major versions, or all
+        required: true
+        default: all
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-loong64-openjdk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: loong64-openjdk-debs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Build packages
+        working-directory: debian/13/loong64/openjdk
+        shell: bash
+        run: |
+          targets="${{ github.event.inputs.targets || 'all' }}"
+          if [[ "${targets}" == "all" ]]; then
+            ./build.sh
+          else
+            ./build.sh ${targets}
+          fi
+
+      - name: Test packages
+        working-directory: debian/13/loong64/openjdk
+        run: ./test.sh
+
+      - name: Upload deb artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: loong64-openjdk-debs
+          path: debian/13/loong64/openjdk/dist/*.deb
+          if-no-files-found: error

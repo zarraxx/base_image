@@ -75,11 +75,14 @@ sudo install -m 0644 "${KEYRING}" "${ROOTFS}/usr/share/keyrings/debian-loong64-n
 
 sudo chroot "${ROOTFS}" apt-get update
 sudo chroot "${ROOTFS}" env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-  git \
+  bash \
   curl wget \
   ca-certificates \
-  python3 \
-  python3-setuptools \
+  iputils-ping \
+  telnet \
+  ftp \
+  net-tools iproute2 \
+  procps \
   xz-utils \
   unzip \
   zip \

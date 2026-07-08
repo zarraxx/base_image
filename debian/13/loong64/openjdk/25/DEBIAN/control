@@ -1,0 +1,14 @@
+Package: openjdk-25-jdk
+Version: 25.0.3+9+loongnix1
+Section: java
+Priority: optional
+Architecture: loong64
+Maintainer: base_image maintainers <noreply@example.invalid>
+Depends: libc6 (>= 2.34), ca-certificates
+Provides: openjdk-25-jre, openjdk-25-jre-headless, java-compiler, java-runtime, java-runtime-headless, java-sdk, java-sdk-headless, java25-runtime, java25-runtime-headless, java25-sdk, java25-sdk-headless
+Homepage: https://ftp.loongnix.cn/Java/openjdk25/loongson25.4.28-fx-jdk25.0.3_9-linux-loongarch64-glibc2.34.tar.gz
+Description: Loongnix OpenJDK 25 for Debian loong64
+ This package repacks the official Loongnix OpenJDK 25
+ loongarch64 glibc binary tarball for Debian loong64 systems.
+ It installs under /usr/lib/jvm and registers common JDK commands
+ with update-alternatives.

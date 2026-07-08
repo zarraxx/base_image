@@ -1,0 +1,14 @@
+Package: openjdk-8-jdk
+Version: 8u492-b09+loongnix1
+Section: java
+Priority: optional
+Architecture: loong64
+Maintainer: base_image maintainers <noreply@example.invalid>
+Depends: libc6 (>= 2.34), ca-certificates
+Provides: openjdk-8-jre, openjdk-8-jre-headless, java-compiler, java-runtime, java-runtime-headless, java-sdk, java-sdk-headless, java8-runtime, java8-runtime-headless, java8-sdk, java8-sdk-headless
+Homepage: https://ftp.loongnix.cn/Java/openjdk8/loongson8.1.27-fx-jdk8u492b09-linux-loongarch64-glibc2.34.tar.gz
+Description: Loongnix OpenJDK 8 for Debian loong64
+ This package repacks the official Loongnix OpenJDK 8
+ loongarch64 glibc binary tarball for Debian loong64 systems.
+ It installs under /usr/lib/jvm and registers common JDK commands
+ with update-alternatives.

@@ -1,0 +1,6 @@
+This package repacks the official Loongnix OpenJDK binary distribution.
+
+Source: https://ftp.loongnix.cn/Java/openjdk8/loongson8.1.27-fx-jdk8u492b09-linux-loongarch64-glibc2.34.tar.gz
+
+The JDK contents keep their upstream licenses and notices as shipped in
+the source tarball under /usr/lib/jvm/loongson-8-jdk-loong64.

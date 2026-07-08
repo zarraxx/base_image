@@ -1,0 +1,14 @@
+Package: openjdk-11-jdk
+Version: 11.0.31+11+loongnix1
+Section: java
+Priority: optional
+Architecture: loong64
+Maintainer: base_image maintainers <noreply@example.invalid>
+Depends: libc6 (>= 2.34), ca-certificates
+Provides: openjdk-11-jre, openjdk-11-jre-headless, java-compiler, java-runtime, java-runtime-headless, java-sdk, java-sdk-headless, java11-runtime, java11-runtime-headless, java11-sdk, java11-sdk-headless
+Homepage: https://ftp.loongnix.cn/Java/openjdk11/loongson11.18.27-fx-jdk11.0.31_11-linux-loongarch64-glibc2.34.tar.gz
+Description: Loongnix OpenJDK 11 for Debian loong64
+ This package repacks the official Loongnix OpenJDK 11
+ loongarch64 glibc binary tarball for Debian loong64 systems.
+ It installs under /usr/lib/jvm and registers common JDK commands
+ with update-alternatives.

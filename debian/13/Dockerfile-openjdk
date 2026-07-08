@@ -1,0 +1,7 @@
+FROM ghcr.io/zarraxx/debian:trixie
+ARG JAVA_VERSION=8
+
+RUN RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    openjdk-${JAVA_VERSION}-jdk-headless \
+    rm -rf /var/lib/apt/lists/*

@@ -1,0 +1,6 @@
+This package repacks the official Loongnix OpenJDK binary distribution.
+
+Source: https://ftp.loongnix.cn/Java/openjdk21/loongson21.11.38-fx-jdk21.0.11_10-linux-loongarch64-glibc2.34.tar.gz
+
+The JDK contents keep their upstream licenses and notices as shipped in
+the source tarball under /usr/lib/jvm/loongson-21-jdk-loong64.

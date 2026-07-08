@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+
+JAVA_HOME="/usr/lib/jvm/loongson-21-jdk-loong64"
+PRIORITY="2111"
+COMMANDS="appletviewer jar jarsigner java javac javadoc javah javap jcmd jconsole jdb jdeprscan jdeps jfr jhsdb jimage jinfo jjs jlink jmap jmod jpackage jps jrunscript jshell jstack jstat jstatd keytool native2ascii pack200 policytool rmic rmiregistry serialver unpack200"
+
+if [ "$1" = "configure" ]; then
+  for command in ${COMMANDS}; do
+    if [ -x "${JAVA_HOME}/bin/${command}" ]; then
+      update-alternatives --install "/usr/bin/${command}" "${command}" "${JAVA_HOME}/bin/${command}" "${PRIORITY}"
+    fi
+  done
+fi
+
+exit 0

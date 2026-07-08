@@ -107,16 +107,19 @@ EOF
 
 sudo chroot "${ROOTFS}" apt-get update
 sudo chroot "${ROOTFS}" env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-  git \
+  bash\
   curl wget \
   ca-certificates \
-  python3 \
-  python3-setuptools \
+  iputils-ping \
+  telnet \
+  ftp \
+  net-tools iproute2 \
+  procps \
   xz-utils \
   unzip \
   zip \
   bzip2 \
-  file
+  file 
 sudo chroot "${ROOTFS}" rm -rf /var/lib/apt/lists/*
 
 if [ -n "${QEMU_BIN}" ]; then

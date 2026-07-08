@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+
+JAVA_HOME="/usr/lib/jvm/loongson-21-jdk-loong64"
+COMMANDS="appletviewer jar jarsigner java javac javadoc javah javap jcmd jconsole jdb jdeprscan jdeps jfr jhsdb jimage jinfo jjs jlink jmap jmod jpackage jps jrunscript jshell jstack jstat jstatd keytool native2ascii pack200 policytool rmic rmiregistry serialver unpack200"
+
+if [ "$1" = "remove" ] || [ "$1" = "deconfigure" ]; then
+  for command in ${COMMANDS}; do
+    if [ -e "${JAVA_HOME}/bin/${command}" ]; then
+      update-alternatives --remove "${command}" "${JAVA_HOME}/bin/${command}" || true
+    fi
+  done
+fi
+
+exit 0
