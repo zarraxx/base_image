@@ -316,7 +316,11 @@ jobs:
             local_tag="localhost/${IMAGE_NAME}:${version}-loong64"
             remote_tag="${{ steps.image.outputs.repo }}:${version}-loong64"
             docker build --platform linux/loong64 -t "${local_tag}" "${build_dir}"
-            docker run --rm --platform linux/loong64 "${local_tag}" /bin/sh -lc 'java -version && javac -version'
+            if [[ "${version}" == "8" ]]; then
+              docker run --rm --platform linux/loong64 -e JAVA_TOOL_OPTIONS=-Xint "${local_tag}" /bin/sh -lc 'java -version && javac -version'
+            else
+              docker run --rm --platform linux/loong64 "${local_tag}" /bin/sh -lc 'java -version && javac -version'
+            fi
 
             if [[ "${{ github.event_name }}" != "pull_request" ]]; then
               docker tag "${local_tag}" "${remote_tag}"

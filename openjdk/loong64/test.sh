@@ -40,17 +40,65 @@ public class Hello {
 }
 EOF
 
+run_java() {
+  local home="$1"
+  local label
+  shift
+
+  label=$(basename "${home}")
+  if [[ "${label}" == loongson-8-* ]]; then
+    JAVA_TOOL_OPTIONS="-Xint" "${home}/bin/java" "$@"
+  else
+    "${home}/bin/java" "$@"
+  fi
+}
+
+run_javac() {
+  local home="$1"
+  local label
+  shift
+
+  label=$(basename "${home}")
+  if [[ "${label}" == loongson-8-* ]]; then
+    JAVA_TOOL_OPTIONS="-Xint" "${home}/bin/javac" "$@"
+  else
+    "${home}/bin/javac" "$@"
+  fi
+}
+
+run_alt_java() {
+  local label="$1"
+  shift
+
+  if [[ "${label}" == loongson-8-* ]]; then
+    JAVA_TOOL_OPTIONS="-Xint" java "$@"
+  else
+    java "$@"
+  fi
+}
+
+run_alt_javac() {
+  local label="$1"
+  shift
+
+  if [[ "${label}" == loongson-8-* ]]; then
+    JAVA_TOOL_OPTIONS="-Xint" javac "$@"
+  else
+    javac "$@"
+  fi
+}
+
 run_jdk() {
   local home="$1"
   local label
   label=$(basename "${home}")
 
   echo "==> run ${label}"
-  "${home}/bin/java" -version
-  "${home}/bin/javac" -version
+  run_java "${home}" -version
+  run_javac "${home}" -version
   rm -f /tmp/Hello.class
-  "${home}/bin/javac" /tmp/Hello.java
-  "${home}/bin/java" -cp /tmp Hello
+  run_javac "${home}" /tmp/Hello.java
+  run_java "${home}" -cp /tmp Hello
 }
 
 switch_jdk() {
@@ -77,11 +125,11 @@ switch_jdk() {
     exit 1
   fi
 
-  java -version
-  javac -version
+  run_alt_java "${label}" -version
+  run_alt_javac "${label}" -version
   rm -f /tmp/Hello.class
-  javac /tmp/Hello.java
-  java -cp /tmp Hello
+  run_alt_javac "${label}" /tmp/Hello.java
+  run_alt_java "${label}" -cp /tmp Hello
 }
 
 mapfile -t homes < <(find /usr/lib/jvm -maxdepth 1 -type d -name "loongson-*-jdk-loong64" | sort -V)
