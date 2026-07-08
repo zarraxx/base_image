@@ -4,6 +4,7 @@ set -euo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 ROOTFS="${SCRIPT_DIR}/rootfs-loong64"
 MIRROR="https://loong13.debian.net/debian-loong64/"
+SECURITY_MIRROR="http://loong13.debian.net/debian-loong64-security/"
 IMAGE_TAG="localhost/debian:trixie-loong64"
 KEY_URL="https://raw.githubusercontent.com/triloong/debian-loong64-keyring/master/active-keys/debian-loong64-non-official-2025.key"
 KEY_FINGERPRINT="734FAB8ADC636909C6625883D81ED514A07B9DA8"
@@ -68,6 +69,7 @@ sudo chroot "${ROOTFS}" /debootstrap/debootstrap --second-stage
 
 sudo tee "${ROOTFS}/etc/apt/sources.list" >/dev/null <<EOF
 deb [signed-by=/usr/share/keyrings/debian-loong64-non-official-archive-keyring.gpg] ${MIRROR} trixie main contrib non-free non-free-firmware
+deb [signed-by=/usr/share/keyrings/debian-loong64-non-official-archive-keyring.gpg] ${SECURITY_MIRROR} trixie-security main contrib non-free non-free-firmware
 EOF
 sudo install -m 0644 "${KEYRING}" "${ROOTFS}/usr/share/keyrings/debian-loong64-non-official-archive-keyring.gpg"
 

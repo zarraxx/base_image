@@ -1,0 +1,163 @@
+name: Release Loong64 Netinst ISO
+
+on:
+  push:
+    tags:
+      - "loong64-netinst-*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Debian loong64 ISO version
+        required: true
+        default: "13.5.0"
+        type: string
+      source_iso_url:
+        description: Official Debian loong64 netinst ISO URL
+        required: true
+        default: "https://loong13.debian.net/debian-loong64-cd/13.5.0/loong64/iso-cd/debian-13.5.0-loong64-netinst.iso"
+        type: string
+      release_tag:
+        description: Release tag to create or update
+        required: true
+        default: "loong64-netinst-13.5.0-gpt-esp"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-loong64-netinst-iso-${{ github.ref }}-${{ github.event.inputs.release_tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  DEFAULT_VERSION: "13.5.0"
+  DEFAULT_SOURCE_ISO_URL: "https://loong13.debian.net/debian-loong64-cd/13.5.0/loong64/iso-cd/debian-13.5.0-loong64-netinst.iso"
+
+jobs:
+  remaster:
+    name: remaster-and-release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set release variables
+        id: vars
+        shell: bash
+        run: |
+          version="${{ github.event.inputs.version || env.DEFAULT_VERSION }}"
+          source_url="${{ github.event.inputs.source_iso_url || env.DEFAULT_SOURCE_ISO_URL }}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            release_tag="${{ github.event.inputs.release_tag }}"
+          else
+            release_tag="${GITHUB_REF_NAME}"
+          fi
+
+          input_iso="debian-${version}-loong64-netinst.iso"
+          output_iso="debian-${version}-loong64-netinst-gpt-esp-uppercase.iso"
+
+          {
+            echo "version=${version}"
+            echo "source_url=${source_url}"
+            echo "release_tag=${release_tag}"
+            echo "input_iso=${input_iso}"
+            echo "output_iso=${output_iso}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Install ISO tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xorriso dosfstools mtools fdisk
+
+      - name: Download official ISO
+        shell: bash
+        run: |
+          curl -fL --retry 5 --retry-delay 10 \
+            -o "${{ steps.vars.outputs.input_iso }}" \
+            "${{ steps.vars.outputs.source_url }}"
+
+      - name: Remaster boot layout
+        shell: bash
+        run: |
+          debian/13/loong64/remaster_netinst_boot.sh \
+            "${{ steps.vars.outputs.input_iso }}" \
+            "${{ steps.vars.outputs.output_iso }}"
+
+      - name: Verify remastered ISO
+        shell: bash
+        run: |
+          iso="${{ steps.vars.outputs.output_iso }}"
+
+          xorriso -indev "${iso}" \
+            -report_system_area plain \
+            -report_el_torito plain \
+            > iso-system-area.txt 2>&1
+
+          fdisk -l "${iso}" > iso-fdisk.txt
+          xorriso -indev "${iso}" \
+            -find /EFI -maxdepth 5 -type f -exec lsdl -- \
+            > iso-efi-files.txt 2>&1
+
+          grep -q "protective-msdos-label.*GPT" iso-system-area.txt
+          grep -q "GPT start and size :   2 .* 28672" iso-system-area.txt
+          grep -q "EFI System" iso-fdisk.txt
+          grep -q "BOOTLOONGARCH64.EFI" iso-efi-files.txt
+          grep -q "BOOTLOONGARCH.EFI" iso-efi-files.txt
+
+          sha256sum "${iso}" > "${iso}.sha256"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.vars.outputs.output_iso }}
+          path: |
+            ${{ steps.vars.outputs.output_iso }}
+            ${{ steps.vars.outputs.output_iso }}.sha256
+            iso-system-area.txt
+            iso-fdisk.txt
+            iso-efi-files.txt
+          if-no-files-found: error
+
+      - name: Create or update GitHub Release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          tag="${{ steps.vars.outputs.release_tag }}"
+          iso="${{ steps.vars.outputs.output_iso }}"
+          source_url="${{ steps.vars.outputs.source_url }}"
+
+          if ! git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+            git tag "${tag}" "${GITHUB_SHA}"
+            git push origin "refs/tags/${tag}"
+          fi
+
+          notes=$(mktemp)
+          cat > "${notes}" <<EOF
+          Remastered Debian loong64 netinst ISO for Loongson UEFI compatibility.
+
+          Source ISO:
+          ${source_url}
+
+          Changes:
+          - Repacked as GPT with protective MBR
+          - Appended 14 MiB FAT16 EFI System Partition
+          - Added uppercase LoongArch UEFI fallback filenames:
+            - EFI/BOOT/BOOTLOONGARCH64.EFI
+            - EFI/BOOT/BOOTLOONGARCH.EFI
+
+          This keeps Debian installer contents unchanged.
+          EOF
+
+          gh release view "${tag}" >/dev/null 2>&1 || \
+            gh release create "${tag}" --title "${tag}" --notes-file "${notes}"
+
+          gh release upload "${tag}" \
+            "${iso}" \
+            "${iso}.sha256" \
+            iso-system-area.txt \
+            iso-fdisk.txt \
+            iso-efi-files.txt \
+            --clobber
