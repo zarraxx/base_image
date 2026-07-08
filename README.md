@@ -12,6 +12,7 @@
 | CentOS 7 + devtoolset-10 | `centos/devtoolset/Dockerfile` | CentOS 7 归档源基础上安装 GCC 10、binutils 和常见构建依赖 | `ghcr.io/zarraxx/centos:devtoolset10` |
 | Debian 10 Aliyun | `debian/10/aliyun/Dockerfile` | Debian 10 归档源引导后切换到阿里云 Debian Archive | `ghcr.io/zarraxx/debian:10-aliyun` |
 | Debian 10 rootfs | `debian/10/rootfs/build.sh` | 使用 `debootstrap` 从 `archive.debian.org` 生成多架构 Buster rootfs 镜像 | `ghcr.io/zarraxx/debian:10`、`ghcr.io/zarraxx/debian:buster` |
+| Debian 12 rootfs | `debian/12/rootfs/build.sh` | 使用 `debootstrap` 生成 Debian Bookworm 全架构 rootfs 镜像 | `ghcr.io/zarraxx/debian:12`、`ghcr.io/zarraxx/debian:bookworm` |
 | Debian 13 | `debian/13/Dockerfile` | Debian Trixie 基础构建工具镜像 | `ghcr.io/zarraxx/debian:13`、`ghcr.io/zarraxx/debian:trixie` |
 | Debian 13 loong64 | `debian/13/loong64/build.sh` | 使用非官方 Debian loong64 源生成 Trixie loong64 rootfs 镜像 | 合并到 `ghcr.io/zarraxx/debian:13`、`ghcr.io/zarraxx/debian:trixie` manifest |
 | Debian 13 loong64 OpenJDK | `debian/13/loong64/openjdk/build.sh` | 将 Loongnix 官方 OpenJDK loongarch64 tarball 重打包为 Debian loong64 `.deb` | `openjdk-8-jdk`、`openjdk-11-jdk`、`openjdk-17-jdk`、`openjdk-21-jdk`、`openjdk-25-jdk` |
@@ -33,6 +34,20 @@ buster-aarch64
 buster-mips64el
 buster-ppc64el
 buster-s390x
+```
+
+`debian-12.yml` 生成并发布以下架构标签，再合并为 `debian:12` 和 `debian:bookworm`：
+
+```text
+bookworm-amd64
+bookworm-i386
+bookworm-armel
+bookworm-armv7
+bookworm-aarch64
+bookworm-mipsel
+bookworm-mips64el
+bookworm-ppc64el
+bookworm-s390x
 ```
 
 `build-debian-13.yml` 生成并发布以下架构标签，再合并为 `debian:13` 和 `debian:trixie`：
@@ -82,6 +97,7 @@ loong64-netinst-13.5.0-gpt-esp
 │   │   ├── aliyun
 │   │   └── rootfs
 │   ├── 12
+│   │   ├── rootfs
 │   │   ├── wine
 │   │   └── wine-msvc
 │   └── 13
@@ -121,6 +137,9 @@ rootfs 类构建需要 `sudo`、`debootstrap`、QEMU/binfmt 和 Docker 或 Podma
 cd debian/10/rootfs
 CONTAINER_TOOL=docker DEBIAN_ARCH=amd64 PLATFORM=linux/amd64 SUFFIX=amd64 IMAGE_TAG=localhost/debian:buster-amd64 ./build.sh
 
+cd ../../12/rootfs
+CONTAINER_TOOL=docker DEBIAN_ARCH=amd64 PLATFORM=linux/amd64 SUFFIX=amd64 IMAGE_TAG=localhost/debian:bookworm-amd64 ./build.sh
+
 cd ../../13/loong64
 CONTAINER_TOOL=docker ./build.sh
 ```
@@ -141,6 +160,7 @@ cd debian/13/loong64/openjdk
 | --- | --- | --- |
 | `build-images.yml` | CentOS、CentOS devtoolset、Debian 10 Aliyun 多架构镜像 | `centos/**`、`debian/10/aliyun/**` |
 | `debian-10.yml` | Debian 10 rootfs 多架构镜像和 manifest | `debian/10/**` |
+| `debian-12.yml` | Debian 12 rootfs 全架构镜像和 manifest | `debian/12/rootfs/**` |
 | `build-debian-13.yml` | Debian 13 官方架构、loong64 镜像和 manifest | `debian/13/**` |
 | `build-loong64-openjdk.yml` | Loongnix OpenJDK tarball 重打包为 Debian loong64 `.deb` 并测试 | `debian/13/loong64/openjdk/**` |
 | `build-wine.yml` | Wine Debian 12 镜像 | `debian/12/wine/**` |
