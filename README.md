@@ -67,13 +67,13 @@ trixie-loong64
 
 | OpenJDK | Debian 基座 | 额外 apt 源 | 发布架构标签 |
 | --- | --- | --- | --- |
-| 8 | Debian 10 Buster | Debian 9 Stretch archive main/security | `8-amd64`、`8-aarch64`、`8-ppc64le`、`8-s390x`、`8-mips64le` |
-| 11 | Debian 10 Buster | 无 | `11-amd64`、`11-aarch64`、`11-ppc64le`、`11-s390x`、`11-mips64le` |
-| 17 | Debian 12 Bookworm | 无 | `17-amd64`、`17-aarch64`、`17-ppc64le`、`17-s390x`、`17-mips64le` |
-| 21 | Debian 13 Trixie | 无 | `21-amd64`、`21-aarch64`、`21-ppc64le`、`21-riscv64`、`21-s390x` |
-| 25 | Debian 13 Trixie | 无 | `25-amd64`、`25-aarch64`、`25-ppc64le`、`25-riscv64`、`25-s390x` |
+| 8 | Debian 10 Buster | Debian 9 Stretch archive main/security | `8-amd64`、`8-aarch64`、`8-ppc64le`、`8-s390x`、`8-mips64le`、`8-loong64` |
+| 11 | Debian 10 Buster | 无 | `11-amd64`、`11-aarch64`、`11-ppc64le`、`11-s390x`、`11-mips64le`、`11-loong64` |
+| 17 | Debian 12 Bookworm | 无 | `17-amd64`、`17-aarch64`、`17-ppc64le`、`17-s390x`、`17-mips64le`、`17-loong64` |
+| 21 | Debian 13 Trixie | 无 | `21-amd64`、`21-aarch64`、`21-ppc64le`、`21-riscv64`、`21-s390x`、`21-loong64` |
+| 25 | Debian 13 Trixie | 无 | `25-amd64`、`25-aarch64`、`25-ppc64le`、`25-riscv64`、`25-s390x`、`25-loong64` |
 
-`riscv64` 只发布 Debian 13 上可用的 OpenJDK 21/25；`mips64le` 只发布 Debian 10/12 上可用的 OpenJDK 8/11/17。LoongArch/loong64 会单独构建 `openjdk:<version>-loong64`，并把生成的 `openjdk-*-jdk_*_loong64.deb` 上传到 GitHub Release `loong64-openjdk-debs`。
+`riscv64` 只发布 Debian 13 上可用的 OpenJDK 21/25；`mips64le` 只发布 Debian 10/12 上可用的 OpenJDK 8/11/17。LoongArch/loong64 会先单独构建 `openjdk:<version>-loong64`，再合并到 `openjdk:<version>` manifest，并把生成的 `openjdk-*-jdk_*_loong64.deb` 上传到 GitHub Release `loong64-openjdk-debs`。
 
 ## Loong64 Netinst ISO
 

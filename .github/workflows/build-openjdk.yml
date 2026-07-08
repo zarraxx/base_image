@@ -383,15 +383,15 @@ jobs:
       matrix:
         include:
           - java: "8"
-            arch_tags: amd64 aarch64 ppc64le s390x mips64le
+            arch_tags: amd64 aarch64 ppc64le s390x mips64le loong64
           - java: "11"
-            arch_tags: amd64 aarch64 ppc64le s390x mips64le
+            arch_tags: amd64 aarch64 ppc64le s390x mips64le loong64
           - java: "17"
-            arch_tags: amd64 aarch64 ppc64le s390x mips64le
+            arch_tags: amd64 aarch64 ppc64le s390x mips64le loong64
           - java: "21"
-            arch_tags: amd64 aarch64 ppc64le riscv64 s390x
+            arch_tags: amd64 aarch64 ppc64le riscv64 s390x loong64
           - java: "25"
-            arch_tags: amd64 aarch64 ppc64le riscv64 s390x
+            arch_tags: amd64 aarch64 ppc64le riscv64 s390x loong64
 
     steps:
       - name: Set image names
