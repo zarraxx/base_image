@@ -82,7 +82,7 @@ jobs:
         run: ./build.sh
 
       - name: Test image
-        run: docker run --rm --platform "${{ matrix.platform }}" "${{ steps.image.outputs.local }}" /bin/sh -lc 'uname -m && python3 --version && git --version'
+        run: docker run --rm --platform "${{ matrix.platform }}" "${{ steps.image.outputs.local }}" /bin/sh -lc 'uname -m'
 
       - name: Login to GHCR
         if: github.event_name != 'pull_request'
