@@ -1,5 +1,5 @@
 *.tar
-rootfs/
+rootfs-*/
 rootfs-loong64/
 debian/13/loong64/debian-loong64-non-official-archive-keyring.gpg
 *.iso
