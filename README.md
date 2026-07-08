@@ -15,7 +15,8 @@
 | Debian 12 rootfs | `debian/12/rootfs/build.sh` | 使用 `debootstrap` 生成 Debian Bookworm 全架构 rootfs 镜像 | `ghcr.io/zarraxx/debian:12`、`ghcr.io/zarraxx/debian:bookworm` |
 | Debian 13 | `debian/13/Dockerfile` | Debian Trixie 基础构建工具镜像 | `ghcr.io/zarraxx/debian:13`、`ghcr.io/zarraxx/debian:trixie` |
 | Debian 13 loong64 | `debian/13/loong64/build.sh` | 使用非官方 Debian loong64 源生成 Trixie loong64 rootfs 镜像 | 合并到 `ghcr.io/zarraxx/debian:13`、`ghcr.io/zarraxx/debian:trixie` manifest |
-| Debian 13 loong64 OpenJDK | `debian/13/loong64/openjdk/build.sh` | 将 Loongnix 官方 OpenJDK loongarch64 tarball 重打包为 Debian loong64 `.deb` | `openjdk-8-jdk`、`openjdk-11-jdk`、`openjdk-17-jdk`、`openjdk-21-jdk`、`openjdk-25-jdk` |
+| Loong64 OpenJDK Debian 包 | `openjdk/loong64/build.sh` | 将 Loongnix 官方 OpenJDK loongarch64 tarball 重打包为 Debian loong64 `.deb` | `openjdk-8-jdk`、`openjdk-11-jdk`、`openjdk-17-jdk`、`openjdk-21-jdk`、`openjdk-25-jdk` |
+| OpenJDK | `openjdk/Dockerfile`、`openjdk/loong64` | 构建 OpenJDK 8/11/17/21/25 多架构镜像，并发布 loong64 Debian 包 | `ghcr.io/zarraxx/openjdk:<version>`、`ghcr.io/zarraxx/openjdk:<version>-loong64` |
 | Wine | `debian/12/wine/Dockerfile` | Debian 12 上的 Wine、wine32/wine64 和 Chromium `depot_tools` 环境 | `ghcr.io/zarraxx/wine:debian-12` |
 | Wine + MSVC | `debian/12/wine-msvc/Dockerfile` | 基于 Wine 镜像安装 `msvc-wine`、MSVC 和 Windows SDK | `registry.cn-hangzhou.aliyuncs.com/zarra/wine:msvc` |
 | Darling | `ubuntu/24.04/darling/Dockerfile` | Ubuntu 24.04 上安装 Darling deb 包，用于运行 macOS 用户态程序 | `ghcr.io/zarraxx/darling:noble-20260608` |
@@ -62,6 +63,18 @@ trixie-s390x
 trixie-loong64
 ```
 
+`build-openjdk.yml` 按 Debian 仓库中实际可用的 OpenJDK 版本构建临时架构标签，再合并为 `openjdk:<version>`：
+
+| OpenJDK | Debian 基座 | 额外 apt 源 | 发布架构标签 |
+| --- | --- | --- | --- |
+| 8 | Debian 10 Buster | Debian 9 Stretch archive main/security | `8-amd64`、`8-aarch64`、`8-ppc64le`、`8-s390x`、`8-mips64le` |
+| 11 | Debian 10 Buster | 无 | `11-amd64`、`11-aarch64`、`11-ppc64le`、`11-s390x`、`11-mips64le` |
+| 17 | Debian 12 Bookworm | 无 | `17-amd64`、`17-aarch64`、`17-ppc64le`、`17-s390x`、`17-mips64le` |
+| 21 | Debian 13 Trixie | 无 | `21-amd64`、`21-aarch64`、`21-ppc64le`、`21-riscv64`、`21-s390x` |
+| 25 | Debian 13 Trixie | 无 | `25-amd64`、`25-aarch64`、`25-ppc64le`、`25-riscv64`、`25-s390x` |
+
+`riscv64` 只发布 Debian 13 上可用的 OpenJDK 21/25；`mips64le` 只发布 Debian 10/12 上可用的 OpenJDK 8/11/17。LoongArch/loong64 会单独构建 `openjdk:<version>-loong64`，并把生成的 `openjdk-*-jdk_*_loong64.deb` 上传到 GitHub Release `loong64-openjdk-debs`。
+
 ## Loong64 Netinst ISO
 
 `release-loong64-netinst-iso.yml` 用于重打包 Debian loong64 netinst ISO，默认输入为 Debian `13.5.0`：
@@ -102,7 +115,8 @@ loong64-netinst-13.5.0-gpt-esp
 │   │   └── wine-msvc
 │   └── 13
 │       └── loong64
-│           └── openjdk
+├── openjdk
+│   └── loong64
 ├── ubuntu
 │   └── 24.04
 │       ├── darling
@@ -147,7 +161,7 @@ CONTAINER_TOOL=docker ./build.sh
 loong64 OpenJDK `.deb` 打包：
 
 ```bash
-cd debian/13/loong64/openjdk
+cd openjdk/loong64
 ./build.sh
 ./test.sh
 ```
@@ -162,7 +176,7 @@ cd debian/13/loong64/openjdk
 | `debian-10.yml` | Debian 10 rootfs 多架构镜像和 manifest | `debian/10/**` |
 | `debian-12.yml` | Debian 12 rootfs 全架构镜像和 manifest | `debian/12/rootfs/**` |
 | `build-debian-13.yml` | Debian 13 官方架构、loong64 镜像和 manifest | `debian/13/**` |
-| `build-loong64-openjdk.yml` | Loongnix OpenJDK tarball 重打包为 Debian loong64 `.deb` 并测试 | `debian/13/loong64/openjdk/**` |
+| `build-openjdk.yml` | OpenJDK 多架构镜像、loong64 镜像和 loong64 `.deb` Release | `openjdk/**`、`debian/10/rootfs/**`、`debian/12/rootfs/**`、`debian/13/Dockerfile`、`debian/13/loong64/**` |
 | `build-wine.yml` | Wine Debian 12 镜像 | `debian/12/wine/**` |
 | `build-wine-msvc.yml` | Wine + MSVC 镜像 | `debian/12/wine-msvc/**` |
 | `build-darling.yml` | Darling Ubuntu 24.04 镜像 | `ubuntu/24.04/darling/**` |

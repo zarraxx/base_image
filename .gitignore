@@ -2,8 +2,8 @@
 rootfs-*/
 rootfs-loong64/
 debian/13/loong64/debian-loong64-non-official-archive-keyring.gpg
-debian/13/loong64/openjdk/.build/
-debian/13/loong64/openjdk/.cache/
-debian/13/loong64/openjdk/dist/
+openjdk/loong64/.build/
+openjdk/loong64/.cache/
+openjdk/loong64/dist/
 *.iso
 *.fd
