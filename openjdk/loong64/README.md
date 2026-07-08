@@ -75,7 +75,7 @@ IMAGE=ghcr.io/zarraxx/debian:trixie DIST_DIR=dist ./test.sh
 
 测试脚本会在 `linux/loong64` 容器中安装全部 `.deb`，逐个 JDK 直接运行 `java` / `javac` 编译执行 `Hello.java`，再逐个切换 `java` / `javac` alternatives 并重复编译运行测试。
 
-OpenJDK 8 在 GitHub Actions 的 loong64 QEMU 环境中会使用 `JAVA_TOOL_OPTIONS=-Xint` 运行测试，以避开 Loongnix JDK 8 HotSpot JIT 在该模拟环境下的崩溃；包内容和默认运行参数不因此改变。
+OpenJDK 8 在 GitHub Actions 当前 loong64 QEMU 环境中会触发 Loongnix JDK 8 HotSpot 断言崩溃，即使使用 `JAVA_TOOL_OPTIONS=-Xint` 也无法完全避开。因此 CI 会设置 `SKIP_OPENJDK8_RUNTIME=true`，只验证 OpenJDK 8 包安装、二进制存在和 alternatives 切换；本地或真实 loong64 环境默认仍执行完整运行测试。包内容和默认运行参数不因此改变。
 
 ## 包行为
 

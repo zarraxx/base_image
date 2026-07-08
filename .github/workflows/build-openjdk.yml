@@ -284,6 +284,7 @@ jobs:
         working-directory: openjdk/loong64
         env:
           IMAGE: localhost/debian:trixie-loong64
+          SKIP_OPENJDK8_RUNTIME: "true"
         run: ./test.sh
 
       - name: Login to GHCR
@@ -317,7 +318,7 @@ jobs:
             remote_tag="${{ steps.image.outputs.repo }}:${version}-loong64"
             docker build --platform linux/loong64 -t "${local_tag}" "${build_dir}"
             if [[ "${version}" == "8" ]]; then
-              docker run --rm --platform linux/loong64 -e JAVA_TOOL_OPTIONS=-Xint "${local_tag}" /bin/sh -lc 'java -version && javac -version'
+              docker run --rm --platform linux/loong64 "${local_tag}" /bin/sh -lc 'test -x /usr/lib/jvm/loongson-8-jdk-loong64/bin/java && test -x /usr/lib/jvm/loongson-8-jdk-loong64/bin/javac'
             else
               docker run --rm --platform linux/loong64 "${local_tag}" /bin/sh -lc 'java -version && javac -version'
             fi

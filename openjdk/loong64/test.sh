@@ -6,6 +6,7 @@ DIST_DIR="${DIST_DIR:-${SCRIPT_DIR}/dist}"
 IMAGE="${IMAGE:-ghcr.io/zarraxx/debian:trixie}"
 PLATFORM="${PLATFORM:-linux/loong64}"
 CONTAINER_TOOL="${CONTAINER_TOOL:-docker}"
+SKIP_OPENJDK8_RUNTIME="${SKIP_OPENJDK8_RUNTIME:-false}"
 
 if [ ! -d "${DIST_DIR}" ]; then
   echo "Package directory does not exist: ${DIST_DIR}" >&2
@@ -19,10 +20,12 @@ fi
 
 "${CONTAINER_TOOL}" run --rm \
   --platform "${PLATFORM}" \
+  -e "SKIP_OPENJDK8_RUNTIME=${SKIP_OPENJDK8_RUNTIME}" \
   -v "${DIST_DIR}":/packages:ro \
   "${IMAGE}" \
   /bin/bash -lc '
 set -euo pipefail
+SKIP_OPENJDK8_RUNTIME="${SKIP_OPENJDK8_RUNTIME:-false}"
 
 echo "==> loongarch container"
 uname -m
@@ -94,6 +97,13 @@ run_jdk() {
   label=$(basename "${home}")
 
   echo "==> run ${label}"
+  if [[ "${label}" == loongson-8-* && "${SKIP_OPENJDK8_RUNTIME}" == "true" ]]; then
+    test -x "${home}/bin/java"
+    test -x "${home}/bin/javac"
+    echo "skip ${label} runtime on this loong64 QEMU environment"
+    return
+  fi
+
   run_java "${home}" -version
   run_javac "${home}" -version
   rm -f /tmp/Hello.class
@@ -123,6 +133,11 @@ switch_jdk() {
   if [ "$(readlink -f /usr/bin/javac)" != "${javac_target}" ]; then
     echo "javac alternative did not switch to ${javac_target}" >&2
     exit 1
+  fi
+
+  if [[ "${label}" == loongson-8-* && "${SKIP_OPENJDK8_RUNTIME}" == "true" ]]; then
+    echo "skip ${label} runtime after alternatives switch on this loong64 QEMU environment"
+    return
   fi
 
   run_alt_java "${label}" -version
