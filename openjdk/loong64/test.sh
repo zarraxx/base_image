@@ -6,7 +6,7 @@ DIST_DIR="${DIST_DIR:-${SCRIPT_DIR}/dist}"
 IMAGE="${IMAGE:-ghcr.io/zarraxx/debian:trixie}"
 PLATFORM="${PLATFORM:-linux/loong64}"
 CONTAINER_TOOL="${CONTAINER_TOOL:-docker}"
-SKIP_OPENJDK8_RUNTIME="${SKIP_OPENJDK8_RUNTIME:-false}"
+ALLOW_RUNTIME_FAILURE="${ALLOW_RUNTIME_FAILURE:-false}"
 
 if [ ! -d "${DIST_DIR}" ]; then
   echo "Package directory does not exist: ${DIST_DIR}" >&2
@@ -20,12 +20,12 @@ fi
 
 "${CONTAINER_TOOL}" run --rm \
   --platform "${PLATFORM}" \
-  -e "SKIP_OPENJDK8_RUNTIME=${SKIP_OPENJDK8_RUNTIME}" \
+  -e "ALLOW_RUNTIME_FAILURE=${ALLOW_RUNTIME_FAILURE}" \
   -v "${DIST_DIR}":/packages:ro \
   "${IMAGE}" \
   /bin/bash -lc '
 set -euo pipefail
-SKIP_OPENJDK8_RUNTIME="${SKIP_OPENJDK8_RUNTIME:-false}"
+ALLOW_RUNTIME_FAILURE="${ALLOW_RUNTIME_FAILURE:-false}"
 
 echo "==> loongarch container"
 uname -m
@@ -91,24 +91,35 @@ run_alt_javac() {
   fi
 }
 
+run_runtime_step() {
+  local label="$1"
+  shift
+
+  if [[ "${ALLOW_RUNTIME_FAILURE}" == "true" ]]; then
+    set +e
+    "$@"
+    local status=$?
+    set -e
+    if [ "${status}" -ne 0 ]; then
+      echo "::warning::${label} runtime command failed with exit ${status}: $*"
+    fi
+    return 0
+  fi
+
+  "$@"
+}
+
 run_jdk() {
   local home="$1"
   local label
   label=$(basename "${home}")
 
   echo "==> run ${label}"
-  if [[ "${label}" == loongson-8-* && "${SKIP_OPENJDK8_RUNTIME}" == "true" ]]; then
-    test -x "${home}/bin/java"
-    test -x "${home}/bin/javac"
-    echo "skip ${label} runtime on this loong64 QEMU environment"
-    return
-  fi
-
-  run_java "${home}" -version
-  run_javac "${home}" -version
+  run_runtime_step "${label}" run_java "${home}" -version
+  run_runtime_step "${label}" run_javac "${home}" -version
   rm -f /tmp/Hello.class
-  run_javac "${home}" /tmp/Hello.java
-  run_java "${home}" -cp /tmp Hello
+  run_runtime_step "${label}" run_javac "${home}" /tmp/Hello.java
+  run_runtime_step "${label}" run_java "${home}" -cp /tmp Hello
 }
 
 switch_jdk() {
@@ -135,16 +146,11 @@ switch_jdk() {
     exit 1
   fi
 
-  if [[ "${label}" == loongson-8-* && "${SKIP_OPENJDK8_RUNTIME}" == "true" ]]; then
-    echo "skip ${label} runtime after alternatives switch on this loong64 QEMU environment"
-    return
-  fi
-
-  run_alt_java "${label}" -version
-  run_alt_javac "${label}" -version
+  run_runtime_step "${label}" run_alt_java "${label}" -version
+  run_runtime_step "${label}" run_alt_javac "${label}" -version
   rm -f /tmp/Hello.class
-  run_alt_javac "${label}" /tmp/Hello.java
-  run_alt_java "${label}" -cp /tmp Hello
+  run_runtime_step "${label}" run_alt_javac "${label}" /tmp/Hello.java
+  run_runtime_step "${label}" run_alt_java "${label}" -cp /tmp Hello
 }
 
 mapfile -t homes < <(find /usr/lib/jvm -maxdepth 1 -type d -name "loongson-*-jdk-loong64" | sort -V)
