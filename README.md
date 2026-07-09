@@ -20,7 +20,7 @@ Debian 10、Debian 12 和 Debian 13 基础镜像默认命令为 `/bin/bash`，�
 | Ubuntu 24.04 | `ubuntu/Dockerfile` | Ubuntu Noble 基础工具镜像 | `ghcr.io/zarraxx/ubuntu:24.04`、`ghcr.io/zarraxx/ubuntu:noble` |
 | Ubuntu 26.04 | `ubuntu/Dockerfile` | Ubuntu Resolute 基础工具镜像 | `ghcr.io/zarraxx/ubuntu:26.04`、`ghcr.io/zarraxx/ubuntu:resolute` |
 | Loong64 OpenJDK Debian 包 | `openjdk/loong64/build.sh` | 将 Loongnix 官方 OpenJDK loongarch64 tarball 重打包为 Debian loong64 `.deb` | `openjdk-8-jdk`、`openjdk-11-jdk`、`openjdk-17-jdk`、`openjdk-21-jdk`、`openjdk-25-jdk` |
-| OpenJDK | `openjdk/Dockerfile`、`openjdk/loong64` | 构建 OpenJDK 8/11/17/21/25 多架构镜像，并发布 loong64 Debian 包 | `ghcr.io/zarraxx/openjdk:<version>`、`ghcr.io/zarraxx/openjdk:<version>-loong64` |
+| OpenJDK | `openjdk/Dockerfile`、`openjdk/loong64`、`openjdk/riscv64` | 基于 Ubuntu Resolute 构建主流架构 OpenJDK 8/11/17/21/25 镜像，mips64le、loong64 和 riscv64 JDK8 走专用构建路径 | `ghcr.io/zarraxx/openjdk:<version>`、`ghcr.io/zarraxx/openjdk:<version>-loong64` |
 | Wine | `debian/12/wine/Dockerfile` | Debian 12 上的 Wine、wine32/wine64 和 Chromium `depot_tools` 环境 | `ghcr.io/zarraxx/wine:debian-12` |
 | Wine + MSVC | `debian/12/wine-msvc/Dockerfile` | 基于 Wine 镜像安装 `msvc-wine`、MSVC 和 Windows SDK | `registry.cn-hangzhou.aliyuncs.com/zarra/wine:msvc` |
 | Darling | `ubuntu/24.04/darling/Dockerfile` | Ubuntu 24.04 上安装 Darling deb 包，用于运行 macOS 用户态程序 | `ghcr.io/zarraxx/darling:noble-20260608` |
@@ -83,17 +83,19 @@ resolute-riscv64
 resolute-s390x
 ```
 
-`build-openjdk.yml` 按 Debian 仓库中实际可用的 OpenJDK 版本构建临时架构标签，再合并为 `openjdk:<version>`：
+`build-openjdk.yml` 使用 `ghcr.io/zarraxx/ubuntu:resolute` 构建主流架构临时标签，再合并为 `openjdk:<version>`：
 
-| OpenJDK | Debian 基座 | 额外 apt 源 | 发布架构标签 |
+| OpenJDK | 主流架构基座 | 特殊架构路径 | 发布架构标签 |
 | --- | --- | --- | --- |
-| 8 | Debian 10 Buster | Debian 9 Stretch archive main/security | `8-amd64`、`8-aarch64`、`8-ppc64le`、`8-s390x`、`8-mips64le`、`8-loong64` |
-| 11 | Debian 10 Buster | 无 | `11-amd64`、`11-aarch64`、`11-ppc64le`、`11-s390x`、`11-mips64le`、`11-loong64` |
-| 17 | Debian 12 Bookworm | 无 | `17-amd64`、`17-aarch64`、`17-ppc64le`、`17-s390x`、`17-mips64le`、`17-loong64` |
-| 21 | Debian 13 Trixie | 无 | `21-amd64`、`21-aarch64`、`21-ppc64le`、`21-riscv64`、`21-s390x`、`21-loong64` |
-| 25 | Debian 13 Trixie | 无 | `25-amd64`、`25-aarch64`、`25-ppc64le`、`25-riscv64`、`25-s390x`、`25-loong64` |
+| 8 | Ubuntu 26.04 Resolute | `riscv64` 使用 openSUSE Tumbleweed RPM 重打 `.deb`；`mips64le` 使用 Debian 10 Buster + Debian 9 Stretch archive；`loong64` 使用自构建 `.deb` | `8-amd64`、`8-arm64v8`、`8-ppc64le`、`8-riscv64`、`8-s390x`、`8-mips64le`、`8-loong64` |
+| 11 | Ubuntu 26.04 Resolute | `mips64le` 使用 Debian 10 Buster；`loong64` 使用自构建 `.deb` | `11-amd64`、`11-arm64v8`、`11-ppc64le`、`11-riscv64`、`11-s390x`、`11-mips64le`、`11-loong64` |
+| 17 | Ubuntu 26.04 Resolute | `mips64le` 使用 Debian 12 Bookworm；`loong64` 使用自构建 `.deb` | `17-amd64`、`17-arm64v8`、`17-ppc64le`、`17-riscv64`、`17-s390x`、`17-mips64le`、`17-loong64` |
+| 21 | Ubuntu 26.04 Resolute | `loong64` 使用自构建 `.deb` | `21-amd64`、`21-arm64v8`、`21-ppc64le`、`21-riscv64`、`21-s390x`、`21-loong64` |
+| 25 | Ubuntu 26.04 Resolute | `loong64` 使用自构建 `.deb` | `25-amd64`、`25-arm64v8`、`25-ppc64le`、`25-riscv64`、`25-s390x`、`25-loong64` |
 
-`riscv64` 只发布 Debian 13 上可用的 OpenJDK 21/25；`mips64le` 只发布 Debian 10/12 上可用的 OpenJDK 8/11/17。LoongArch/loong64 会先单独构建 `openjdk:<version>-loong64`，再合并到 `openjdk:<version>` manifest，并把生成的 `openjdk-*-jdk_*_loong64.deb` 上传到 GitHub Release `loong64-openjdk-debs`。
+Ubuntu Resolute 当前没有 `openjdk-8-jdk-headless` 的 `riscv64` 包，因此 OpenJDK 8 的 `8-riscv64` 会先从 openSUSE 官方 riscv64 RPM 重打 `openjdk-8-jdk_*_riscv64.deb`，再构建镜像并合并到 `openjdk:8` manifest。LoongArch/loong64 会先单独构建 `openjdk:<version>-loong64`，再合并到 `openjdk:<version>` manifest。生成的 loong64 `.deb` 上传到 GitHub Release `loong64-openjdk-debs`，生成的 riscv64 JDK8 `.deb` 上传到 GitHub Release `riscv64-openjdk8-debs`。
+
+OpenJDK workflow 会对各版本/架构镜像执行 `java -version` 和 `javac -version` smoke test；这些运行测试在 QEMU 下失败时只输出 GitHub Actions warning，不阻断镜像构建、推送和 manifest 发布。
 
 ## Loong64 Netinst ISO
 
@@ -188,6 +190,14 @@ cd openjdk/loong64
 ./test.sh
 ```
 
+riscv64 OpenJDK 8 `.deb` 打包：
+
+```bash
+cd openjdk/riscv64
+./build.sh
+CONTAINER_TOOL=podman IMAGE=ghcr.io/zarraxx/ubuntu:resolute ./test.sh
+```
+
 部分构建脚本会清理 dangling image，并删除同名本地镜像后重新构建。
 
 ## GitHub Actions
@@ -200,7 +210,7 @@ cd openjdk/loong64
 | `build-debian-13.yml` | Debian 13 官方架构、loong64 镜像和 manifest | `debian/13/**` |
 | `ubuntu-24.04.yml` | Ubuntu 24.04 Noble 五架构镜像和 manifest | `ubuntu/Dockerfile`、`.github/workflows/ubuntu-24.04.yml` |
 | `ubuntu-26.04.yml` | Ubuntu 26.04 Resolute 五架构镜像和 manifest | `ubuntu/Dockerfile`、`.github/workflows/ubuntu-26.04.yml` |
-| `build-openjdk.yml` | OpenJDK 多架构镜像、loong64 镜像和 loong64 `.deb` Release | `openjdk/**`、`debian/10/rootfs/**`、`debian/12/rootfs/**`、`debian/13/Dockerfile`、`debian/13/loong64/**` |
+| `build-openjdk.yml` | OpenJDK 多架构镜像、loong64 镜像、riscv64 JDK8 镜像和专用 `.deb` Release | `openjdk/**`、`ubuntu/Dockerfile`、`debian/13/loong64/**` |
 | `build-wine.yml` | Wine Debian 12 镜像 | `debian/12/wine/**` |
 | `build-wine-msvc.yml` | Wine + MSVC 镜像 | `debian/12/wine-msvc/**` |
 | `build-darling.yml` | Darling Ubuntu 24.04 镜像 | `ubuntu/24.04/darling/**` |

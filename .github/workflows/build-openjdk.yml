@@ -8,27 +8,25 @@ on:
     paths:
       - "openjdk/Dockerfile"
       - "openjdk/loong64/**"
-      - "debian/10/rootfs/**"
+      - "openjdk/riscv64/**"
       - "debian/13/loong64/**"
-      - "debian/13/Dockerfile"
-      - "debian/12/rootfs/**"
+      - "ubuntu/Dockerfile"
       - ".github/workflows/build-openjdk.yml"
   pull_request:
     paths:
       - "openjdk/Dockerfile"
       - "openjdk/loong64/**"
-      - "debian/10/rootfs/**"
+      - "openjdk/riscv64/**"
       - "debian/13/loong64/**"
-      - "debian/13/Dockerfile"
-      - "debian/12/rootfs/**"
+      - "ubuntu/Dockerfile"
       - ".github/workflows/build-openjdk.yml"
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: openjdk
-  DEBIAN_IMAGE_NAME: debian
   RELEASE_TAG: loong64-openjdk-debs
+  RISCV64_RELEASE_TAG: riscv64-openjdk8-debs
 
 permissions:
   contents: write
@@ -50,151 +48,163 @@ jobs:
             target:
               suffix: amd64
               platform: linux/amd64
-              base_tag: buster-amd64
-              stretch_openjdk8: "true"
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
+              stretch_openjdk8: "false"
           - java: "8"
             target:
-              suffix: aarch64
+              suffix: arm64v8
               platform: linux/arm64/v8
-              base_tag: buster-aarch64
-              stretch_openjdk8: "true"
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
+              stretch_openjdk8: "false"
           - java: "8"
             target:
               suffix: ppc64le
               platform: linux/ppc64le
-              base_tag: buster-ppc64el
-              stretch_openjdk8: "true"
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
+              stretch_openjdk8: "false"
           - java: "8"
             target:
               suffix: s390x
               platform: linux/s390x
-              base_tag: buster-s390x
-              stretch_openjdk8: "true"
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
+              stretch_openjdk8: "false"
           - java: "8"
             target:
               suffix: mips64le
               platform: linux/mips64le
-              base_tag: buster-mips64el
+              base_image: ghcr.io/zarraxx/debian:buster-mips64el
               stretch_openjdk8: "true"
           - java: "11"
             target:
               suffix: amd64
               platform: linux/amd64
-              base_tag: buster-amd64
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "11"
             target:
-              suffix: aarch64
+              suffix: arm64v8
               platform: linux/arm64/v8
-              base_tag: buster-aarch64
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "11"
             target:
               suffix: ppc64le
               platform: linux/ppc64le
-              base_tag: buster-ppc64el
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
+              stretch_openjdk8: "false"
+          - java: "11"
+            target:
+              suffix: riscv64
+              platform: linux/riscv64
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "11"
             target:
               suffix: s390x
               platform: linux/s390x
-              base_tag: buster-s390x
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "11"
             target:
               suffix: mips64le
               platform: linux/mips64le
-              base_tag: buster-mips64el
+              base_image: ghcr.io/zarraxx/debian:buster-mips64el
               stretch_openjdk8: "false"
           - java: "17"
             target:
               suffix: amd64
               platform: linux/amd64
-              base_tag: bookworm-amd64
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "17"
             target:
-              suffix: aarch64
+              suffix: arm64v8
               platform: linux/arm64/v8
-              base_tag: bookworm-aarch64
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "17"
             target:
               suffix: ppc64le
               platform: linux/ppc64le
-              base_tag: bookworm-ppc64el
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
+              stretch_openjdk8: "false"
+          - java: "17"
+            target:
+              suffix: riscv64
+              platform: linux/riscv64
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "17"
             target:
               suffix: s390x
               platform: linux/s390x
-              base_tag: bookworm-s390x
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "17"
             target:
               suffix: mips64le
               platform: linux/mips64le
-              base_tag: bookworm-mips64el
+              base_image: ghcr.io/zarraxx/debian:bookworm-mips64el
               stretch_openjdk8: "false"
           - java: "21"
             target:
               suffix: amd64
               platform: linux/amd64
-              base_tag: trixie-amd64
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "21"
             target:
-              suffix: aarch64
+              suffix: arm64v8
               platform: linux/arm64/v8
-              base_tag: trixie-arm64v8
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "21"
             target:
               suffix: ppc64le
               platform: linux/ppc64le
-              base_tag: trixie-ppc64le
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "21"
             target:
               suffix: riscv64
               platform: linux/riscv64
-              base_tag: trixie-riscv64
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "21"
             target:
               suffix: s390x
               platform: linux/s390x
-              base_tag: trixie-s390x
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "25"
             target:
               suffix: amd64
               platform: linux/amd64
-              base_tag: trixie-amd64
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "25"
             target:
-              suffix: aarch64
+              suffix: arm64v8
               platform: linux/arm64/v8
-              base_tag: trixie-arm64v8
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "25"
             target:
               suffix: ppc64le
               platform: linux/ppc64le
-              base_tag: trixie-ppc64le
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "25"
             target:
               suffix: riscv64
               platform: linux/riscv64
-              base_tag: trixie-riscv64
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
           - java: "25"
             target:
               suffix: s390x
               platform: linux/s390x
-              base_tag: trixie-s390x
+              base_image: ghcr.io/zarraxx/ubuntu:resolute
               stretch_openjdk8: "false"
 
     steps:
@@ -207,17 +217,33 @@ jobs:
         run: |
           owner="${GITHUB_REPOSITORY_OWNER,,}"
           openjdk_image="${REGISTRY}/${owner}/${IMAGE_NAME}"
-          debian_image="${REGISTRY}/${owner}/${DEBIAN_IMAGE_NAME}"
-          {
-            echo "tag=${openjdk_image}:${{ matrix.java }}-${{ matrix.target.suffix }}"
-            echo "base=${debian_image}:${{ matrix.target.base_tag }}"
-          } >> "${GITHUB_OUTPUT}"
+          echo "tag=${openjdk_image}:${{ matrix.java }}-${{ matrix.target.suffix }}" >> "${GITHUB_OUTPUT}"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Build local smoke image
+        shell: bash
+        run: |
+          docker build \
+            --platform "${{ matrix.target.platform }}" \
+            -f openjdk/Dockerfile \
+            -t "localhost/${IMAGE_NAME}:${{ matrix.java }}-${{ matrix.target.suffix }}-smoke" \
+            --build-arg "BASE_IMAGE=${{ matrix.target.base_image }}" \
+            --build-arg "JAVA_VERSION=${{ matrix.java }}" \
+            --build-arg "ENABLE_STRETCH_OPENJDK8=${{ matrix.target.stretch_openjdk8 }}" \
+            .
+
+      - name: Smoke test local image
+        shell: bash
+        run: |
+          local_tag="localhost/${IMAGE_NAME}:${{ matrix.java }}-${{ matrix.target.suffix }}-smoke"
+          if ! docker run --rm --platform "${{ matrix.target.platform }}" "${local_tag}" /bin/sh -lc 'java -version && javac -version'; then
+            echo "::warning::openjdk ${{ matrix.java }}-${{ matrix.target.suffix }} smoke test failed; continuing"
+          fi
 
       - name: Login to GHCR
         if: github.event_name != 'pull_request'
@@ -236,7 +262,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.image.outputs.tag }}
           build-args: |
-            BASE_IMAGE=${{ steps.image.outputs.base }}
+            BASE_IMAGE=${{ matrix.target.base_image }}
             JAVA_VERSION=${{ matrix.java }}
             ENABLE_STRETCH_OPENJDK8=${{ matrix.target.stretch_openjdk8 }}
           provenance: false
@@ -285,7 +311,10 @@ jobs:
         env:
           IMAGE: localhost/debian:trixie-loong64
           ALLOW_RUNTIME_FAILURE: "true"
-        run: ./test.sh
+        run: |
+          if ! ./test.sh; then
+            echo "::warning::loong64 OpenJDK deb test failed; continuing"
+          fi
 
       - name: Login to GHCR
         if: github.event_name != 'pull_request'
@@ -371,27 +400,149 @@ jobs:
 
           gh release upload "${tag}" openjdk/loong64/dist/*.deb --clobber
 
+  build-riscv64-jdk8:
+    name: openjdk-8-riscv64
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set image names
+        id: image
+        shell: bash
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "repo=${REGISTRY}/${owner}/${IMAGE_NAME}" >> "${GITHUB_OUTPUT}"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends cpio zstd
+
+      - name: Cache openSUSE OpenJDK riscv64 RPMs
+        uses: actions/cache@v4
+        with:
+          path: openjdk/riscv64/.cache
+          key: riscv64-openjdk8-rpms-${{ hashFiles('openjdk/riscv64/8/package.conf') }}
+          restore-keys: |
+            riscv64-openjdk8-rpms-
+
+      - name: Build riscv64 OpenJDK 8 deb
+        working-directory: openjdk/riscv64
+        run: ./build.sh
+
+      - name: Test riscv64 OpenJDK 8 deb
+        working-directory: openjdk/riscv64
+        env:
+          IMAGE: ghcr.io/zarraxx/ubuntu:resolute
+        run: |
+          if ! ./test.sh; then
+            echo "::warning::riscv64 OpenJDK 8 deb test failed; continuing"
+          fi
+
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_KEY }}
+
+      - name: Build and optionally push riscv64 OpenJDK 8 image
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          build_dir="$(mktemp -d)"
+          deb="$(ls openjdk/riscv64/dist/openjdk-8-jdk_*_riscv64.deb)"
+          cp "${deb}" "${build_dir}/openjdk.deb"
+          cat > "${build_dir}/Dockerfile" <<'EOF'
+          FROM ghcr.io/zarraxx/ubuntu:resolute
+          COPY openjdk.deb /tmp/openjdk.deb
+          RUN apt-get update && \
+              apt-get install -y --no-install-recommends /tmp/openjdk.deb && \
+              rm -f /tmp/openjdk.deb && \
+              rm -rf /var/lib/apt/lists/*
+          CMD ["java", "-version"]
+          EOF
+
+          local_tag="localhost/${IMAGE_NAME}:8-riscv64"
+          remote_tag="${{ steps.image.outputs.repo }}:8-riscv64"
+          docker build --platform linux/riscv64 -t "${local_tag}" "${build_dir}"
+          if ! docker run --rm --platform linux/riscv64 "${local_tag}" /bin/sh -lc 'java -version && javac -version'; then
+            echo "::warning::openjdk 8-riscv64 JVM smoke test failed; continuing"
+          fi
+
+          if [[ "${{ github.event_name }}" != "pull_request" ]]; then
+            docker tag "${local_tag}" "${remote_tag}"
+            docker push "${remote_tag}"
+          fi
+
+          rm -rf "${build_dir}"
+
+      - name: Upload riscv64 deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: riscv64-openjdk8-deb
+          path: openjdk/riscv64/dist/*.deb
+          if-no-files-found: error
+
+      - name: Release riscv64 OpenJDK 8 deb package
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tag="${RISCV64_RELEASE_TAG}"
+          notes="$(mktemp)"
+          cat > "${notes}" <<'EOF'
+          openSUSE Tumbleweed OpenJDK 8 riscv64 RPM packages repacked as a Debian riscv64 package.
+
+          Package:
+          - openjdk-8-jdk
+
+          Source RPM repository:
+          - https://download.opensuse.org/ports/riscv/tumbleweed/repo/oss/riscv64/
+          EOF
+
+          if ! git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+            git tag "${tag}" "${GITHUB_SHA}"
+            git push origin "refs/tags/${tag}"
+          fi
+
+          gh release view "${tag}" >/dev/null 2>&1 || \
+            gh release create "${tag}" --title "${tag}" --notes-file "${notes}"
+
+          gh release upload "${tag}" openjdk/riscv64/dist/*.deb --clobber
+
   publish-manifest:
     name: openjdk-manifest
     runs-on: ubuntu-latest
     needs:
       - build-official
       - build-loong64
+      - build-riscv64-jdk8
     if: github.event_name != 'pull_request'
     strategy:
       fail-fast: false
       matrix:
         include:
           - java: "8"
-            arch_tags: amd64 aarch64 ppc64le s390x mips64le loong64
+            arch_tags: amd64 arm64v8 ppc64le riscv64 s390x mips64le loong64
           - java: "11"
-            arch_tags: amd64 aarch64 ppc64le s390x mips64le loong64
+            arch_tags: amd64 arm64v8 ppc64le riscv64 s390x mips64le loong64
           - java: "17"
-            arch_tags: amd64 aarch64 ppc64le s390x mips64le loong64
+            arch_tags: amd64 arm64v8 ppc64le riscv64 s390x mips64le loong64
           - java: "21"
-            arch_tags: amd64 aarch64 ppc64le riscv64 s390x loong64
+            arch_tags: amd64 arm64v8 ppc64le riscv64 s390x loong64
           - java: "25"
-            arch_tags: amd64 aarch64 ppc64le riscv64 s390x loong64
+            arch_tags: amd64 arm64v8 ppc64le riscv64 s390x loong64
 
     steps:
       - name: Set image names

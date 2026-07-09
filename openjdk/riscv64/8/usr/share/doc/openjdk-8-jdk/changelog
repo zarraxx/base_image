@@ -1,0 +1,5 @@
+openjdk-8-jdk (8u492-b09+opensuse1) trixie; urgency=medium
+
+  * Repack openSUSE Tumbleweed OpenJDK 8 riscv64 RPM packages for Debian.
+
+ -- base_image maintainers <noreply@example.invalid>  Thu, 09 Jul 2026 00:00:00 +0000

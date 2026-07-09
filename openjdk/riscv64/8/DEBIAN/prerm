@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+
+JAVA_HOME="/usr/lib/jvm/opensuse-8-jdk-riscv64"
+COMMANDS="appletviewer clhsdb extcheck hsdb idlj jar jarsigner java java-rmi.cgi javac javadoc javah javap jcmd jconsole jdb jdeps jhat jinfo jjs jmap jps jrunscript jsadebugd jstack jstat jstatd keytool native2ascii orbd pack200 policytool rmic rmid rmiregistry schemagen serialver servertool tnameserv unpack200 wsgen wsimport xjc"
+
+if [ "$1" = "remove" ] || [ "$1" = "deconfigure" ]; then
+  for command in ${COMMANDS}; do
+    if [ -e "${JAVA_HOME}/bin/${command}" ]; then
+      update-alternatives --remove "${command}" "${JAVA_HOME}/bin/${command}" || true
+    fi
+  done
+fi
+
+exit 0

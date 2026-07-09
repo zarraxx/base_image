@@ -1,0 +1,13 @@
+Package: openjdk-8-jdk
+Version: 8u492-b09+opensuse1
+Section: java
+Priority: optional
+Architecture: riscv64
+Maintainer: base_image maintainers <noreply@example.invalid>
+Depends: libc6 (>= 2.38), libffi8, libstdc++6, zlib1g, libfreetype6, ca-certificates
+Provides: openjdk-8-jre, openjdk-8-jre-headless, java-compiler, java-runtime, java-runtime-headless, java-sdk, java-sdk-headless, java8-runtime, java8-runtime-headless, java8-sdk, java8-sdk-headless
+Homepage: https://download.opensuse.org/ports/riscv/tumbleweed/repo/oss/riscv64/
+Description: openSUSE OpenJDK 8 Zero VM for Debian riscv64
+ This package repacks the openSUSE Tumbleweed riscv64 OpenJDK 8
+ RPM packages as a Debian riscv64 package. It installs under
+ /usr/lib/jvm and registers common JDK commands with update-alternatives.
