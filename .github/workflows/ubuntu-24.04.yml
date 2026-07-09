@@ -1,0 +1,127 @@
+name: Ubuntu 24.04
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "ubuntu/Dockerfile"
+      - ".github/workflows/ubuntu-24.04.yml"
+  pull_request:
+    paths:
+      - "ubuntu/Dockerfile"
+      - ".github/workflows/ubuntu-24.04.yml"
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ubuntu
+  IMAGE_TAG_VERSION: "24.04"
+  IMAGE_TAG_CODENAME: noble
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: ubuntu-24.04-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ubuntu-24.04-${{ matrix.suffix }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suffix: amd64
+            platform: linux/amd64
+          - suffix: arm64v8
+            platform: linux/arm64/v8
+          - suffix: ppc64le
+            platform: linux/ppc64le
+          - suffix: riscv64
+            platform: linux/riscv64
+          - suffix: s390x
+            platform: linux/s390x
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set image names
+        id: image
+        shell: bash
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "repo=${REGISTRY}/${owner}/${IMAGE_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "tag=${REGISTRY}/${owner}/${IMAGE_NAME}:${IMAGE_TAG_CODENAME}-${{ matrix.suffix }}" >> "${GITHUB_OUTPUT}"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_KEY }}
+
+      - name: Build and optionally push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ubuntu/Dockerfile
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            BASE_IMAGE=ubuntu:${{ env.IMAGE_TAG_VERSION }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.image.outputs.tag }}
+          provenance: false
+          sbom: false
+          cache-from: type=gha,scope=ubuntu-24.04-${{ matrix.suffix }}
+          cache-to: type=gha,mode=max,scope=ubuntu-24.04-${{ matrix.suffix }}
+
+  publish-manifest:
+    name: ubuntu-24.04-manifest
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Set image names
+        id: image
+        shell: bash
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          image="${REGISTRY}/${owner}/${IMAGE_NAME}"
+          echo "image=${image}" >> "${GITHUB_OUTPUT}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_KEY }}
+
+      - name: Publish manifest tags
+        run: |
+          image="${{ steps.image.outputs.image }}"
+          docker buildx imagetools create \
+            --tag "${image}:${IMAGE_TAG_VERSION}" \
+            --tag "${image}:${IMAGE_TAG_CODENAME}" \
+            "${image}:${IMAGE_TAG_CODENAME}-amd64" \
+            "${image}:${IMAGE_TAG_CODENAME}-arm64v8" \
+            "${image}:${IMAGE_TAG_CODENAME}-ppc64le" \
+            "${image}:${IMAGE_TAG_CODENAME}-riscv64" \
+            "${image}:${IMAGE_TAG_CODENAME}-s390x"

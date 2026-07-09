@@ -4,6 +4,8 @@
 
 镜像主要发布到 GitHub Container Registry（GHCR）和阿里云容器镜像服务。GitHub Actions 会在推送到 `main` / `master`、相关目录变更或手动触发时执行构建；Pull Request 只做构建和测试校验，不推送镜像。
 
+Debian 10、Debian 12 和 Debian 13 基础镜像默认命令为 `/bin/bash`，并预装 `vim` 以及常用网络和压缩工具。
+
 ## 镜像列表
 
 | 类型 | Dockerfile / 构建入口 | 说明 | 发布标签 |
@@ -15,6 +17,8 @@
 | Debian 12 rootfs | `debian/12/rootfs/build.sh` | 使用 `debootstrap` 生成 Debian Bookworm 全架构 rootfs 镜像 | `ghcr.io/zarraxx/debian:12`、`ghcr.io/zarraxx/debian:bookworm` |
 | Debian 13 | `debian/13/Dockerfile` | Debian Trixie 基础构建工具镜像 | `ghcr.io/zarraxx/debian:13`、`ghcr.io/zarraxx/debian:trixie` |
 | Debian 13 loong64 | `debian/13/loong64/build.sh` | 使用非官方 Debian loong64 源生成 Trixie loong64 rootfs 镜像 | 合并到 `ghcr.io/zarraxx/debian:13`、`ghcr.io/zarraxx/debian:trixie` manifest |
+| Ubuntu 24.04 | `ubuntu/Dockerfile` | Ubuntu Noble 基础工具镜像 | `ghcr.io/zarraxx/ubuntu:24.04`、`ghcr.io/zarraxx/ubuntu:noble` |
+| Ubuntu 26.04 | `ubuntu/Dockerfile` | Ubuntu Resolute 基础工具镜像 | `ghcr.io/zarraxx/ubuntu:26.04`、`ghcr.io/zarraxx/ubuntu:resolute` |
 | Loong64 OpenJDK Debian 包 | `openjdk/loong64/build.sh` | 将 Loongnix 官方 OpenJDK loongarch64 tarball 重打包为 Debian loong64 `.deb` | `openjdk-8-jdk`、`openjdk-11-jdk`、`openjdk-17-jdk`、`openjdk-21-jdk`、`openjdk-25-jdk` |
 | OpenJDK | `openjdk/Dockerfile`、`openjdk/loong64` | 构建 OpenJDK 8/11/17/21/25 多架构镜像，并发布 loong64 Debian 包 | `ghcr.io/zarraxx/openjdk:<version>`、`ghcr.io/zarraxx/openjdk:<version>-loong64` |
 | Wine | `debian/12/wine/Dockerfile` | Debian 12 上的 Wine、wine32/wine64 和 Chromium `depot_tools` 环境 | `ghcr.io/zarraxx/wine:debian-12` |
@@ -61,6 +65,22 @@ trixie-ppc64le
 trixie-riscv64
 trixie-s390x
 trixie-loong64
+```
+
+`ubuntu-24.04.yml` 和 `ubuntu-26.04.yml` 生成并发布以下架构标签，再合并为版本号和代号 manifest：
+
+```text
+noble-amd64
+noble-arm64v8
+noble-ppc64le
+noble-riscv64
+noble-s390x
+
+resolute-amd64
+resolute-arm64v8
+resolute-ppc64le
+resolute-riscv64
+resolute-s390x
 ```
 
 `build-openjdk.yml` 按 Debian 仓库中实际可用的 OpenJDK 版本构建临时架构标签，再合并为 `openjdk:<version>`：
@@ -134,6 +154,8 @@ docker build -f centos/aliyun/Dockerfile -t local/centos:aliyun .
 docker build -f centos/devtoolset/Dockerfile -t local/centos:devtoolset10 .
 docker build -f debian/10/aliyun/Dockerfile -t local/debian:10-aliyun .
 docker build -f debian/13/Dockerfile -t local/debian:trixie .
+docker build -f ubuntu/Dockerfile --build-arg BASE_IMAGE=ubuntu:24.04 -t local/ubuntu:noble .
+docker build -f ubuntu/Dockerfile --build-arg BASE_IMAGE=ubuntu:26.04 -t local/ubuntu:resolute .
 ```
 
 带脚本的镜像建议进入对应目录执行：
@@ -176,6 +198,8 @@ cd openjdk/loong64
 | `debian-10.yml` | Debian 10 rootfs 多架构镜像和 manifest | `debian/10/**` |
 | `debian-12.yml` | Debian 12 rootfs 全架构镜像和 manifest | `debian/12/rootfs/**` |
 | `build-debian-13.yml` | Debian 13 官方架构、loong64 镜像和 manifest | `debian/13/**` |
+| `ubuntu-24.04.yml` | Ubuntu 24.04 Noble 五架构镜像和 manifest | `ubuntu/Dockerfile`、`.github/workflows/ubuntu-24.04.yml` |
+| `ubuntu-26.04.yml` | Ubuntu 26.04 Resolute 五架构镜像和 manifest | `ubuntu/Dockerfile`、`.github/workflows/ubuntu-26.04.yml` |
 | `build-openjdk.yml` | OpenJDK 多架构镜像、loong64 镜像和 loong64 `.deb` Release | `openjdk/**`、`debian/10/rootfs/**`、`debian/12/rootfs/**`、`debian/13/Dockerfile`、`debian/13/loong64/**` |
 | `build-wine.yml` | Wine Debian 12 镜像 | `debian/12/wine/**` |
 | `build-wine-msvc.yml` | Wine + MSVC 镜像 | `debian/12/wine-msvc/**` |

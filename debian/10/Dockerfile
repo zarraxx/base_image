@@ -19,7 +19,7 @@ RUN \
     echo "==> STEP 2: Installing ca-certificates..." && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        bash\
+        bash \
         curl wget \
         ca-certificates \
         iputils-ping \
@@ -31,5 +31,8 @@ RUN \
         unzip \
         zip \
         bzip2 \
+        vim \
         file && \
     rm -rf /var/lib/apt/lists/*
+
+CMD ["/bin/bash"]

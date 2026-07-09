@@ -1,10 +1,11 @@
-FROM debian:trixie
+ARG BASE_IMAGE=ubuntu:24.04
+FROM ${BASE_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        bash \
+        bash vim \
         curl wget \
         ca-certificates \
         iputils-ping \
@@ -16,7 +17,6 @@ RUN apt-get update && \
         unzip \
         zip \
         bzip2 \
-        vim \
         file && \
     rm -rf /var/lib/apt/lists/*
 

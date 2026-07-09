@@ -17,7 +17,11 @@ RUN \
     # --- 步骤 2: 更新并安装 HTTPS 支持 ---
     echo "==> STEP 2: Installing ca-certificates..." && \
     apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates curl wget && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        wget \
+        vim && \
      \
     # --- 步骤 3: 切换到阿里云镜像源 ---
     echo "==> STEP 3: Switching to Aliyun mirrors..." && \
@@ -31,4 +35,4 @@ RUN \
 
 
 # 设置默认命令，方便测试
-CMD ["bash"]
+CMD ["/bin/bash"]

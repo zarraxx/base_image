@@ -87,6 +87,7 @@ sudo chroot "${ROOTFS}" env DEBIAN_FRONTEND=noninteractive apt-get install -y --
   unzip \
   zip \
   bzip2 \
+  vim \
   file
 sudo chroot "${ROOTFS}" rm -rf /var/lib/apt/lists/*
 sudo rm -f "${ROOTFS}/usr/bin/$(basename "${QEMU_BIN}")"
@@ -102,10 +103,10 @@ fi
 
 case "${CONTAINER_TOOL}" in
   podman)
-    sudo tar -C "${ROOTFS}" -c . | podman import --arch loong64 --os linux - "${IMAGE_TAG}"
+    sudo tar -C "${ROOTFS}" -c . | podman import --arch loong64 --os linux --change 'CMD ["/bin/bash"]' - "${IMAGE_TAG}"
     ;;
   docker)
-    sudo tar -C "${ROOTFS}" -c . | docker import --platform linux/loong64 - "${IMAGE_TAG}"
+    sudo tar -C "${ROOTFS}" -c . | docker import --platform linux/loong64 --change 'CMD ["/bin/bash"]' - "${IMAGE_TAG}"
     ;;
   *)
     echo "Unsupported CONTAINER_TOOL: ${CONTAINER_TOOL}" >&2

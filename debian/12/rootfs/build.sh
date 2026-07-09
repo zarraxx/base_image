@@ -125,6 +125,7 @@ sudo chroot "${ROOTFS}" env DEBIAN_FRONTEND=noninteractive apt-get install -y --
   unzip \
   zip \
   bzip2 \
+  vim \
   file
 sudo chroot "${ROOTFS}" rm -rf /var/lib/apt/lists/*
 
@@ -148,10 +149,10 @@ case "${CONTAINER_TOOL}" in
     if [ -n "${VARIANT}" ]; then
       PODMAN_IMPORT_ARGS+=(--variant "${VARIANT}")
     fi
-    sudo tar -C "${ROOTFS}" -c . | podman import "${PODMAN_IMPORT_ARGS[@]}" - "${IMAGE_TAG}"
+    sudo tar -C "${ROOTFS}" -c . | podman import "${PODMAN_IMPORT_ARGS[@]}" --change 'CMD ["/bin/bash"]' - "${IMAGE_TAG}"
     ;;
   docker)
-    sudo tar -C "${ROOTFS}" -c . | docker import --platform "${PLATFORM}" - "${IMAGE_TAG}"
+    sudo tar -C "${ROOTFS}" -c . | docker import --platform "${PLATFORM}" --change 'CMD ["/bin/bash"]' - "${IMAGE_TAG}"
     ;;
   *)
     echo "Unsupported CONTAINER_TOOL: ${CONTAINER_TOOL}" >&2

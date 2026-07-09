@@ -91,7 +91,9 @@ jobs:
         run: ./build.sh
 
       - name: Test image
-        run: docker run --rm --platform "${{ matrix.platform }}" "${{ steps.image.outputs.local }}" /bin/sh -lc 'uname -m && dpkg --print-architecture'
+        run: |
+          docker image inspect --format '{{json .Config.Cmd}}' "${{ steps.image.outputs.local }}" | grep -Fx '["/bin/bash"]'
+          docker run --rm --platform "${{ matrix.platform }}" "${{ steps.image.outputs.local }}" /bin/sh -lc 'command -v vim && uname -m && dpkg --print-architecture'
 
       - name: Login to GHCR
         if: github.event_name != 'pull_request'

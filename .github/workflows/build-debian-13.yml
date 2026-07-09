@@ -112,7 +112,9 @@ jobs:
         run: ./build.sh
 
       - name: Test loong64 image
-        run: docker run --rm --platform linux/loong64 "${{ steps.image.outputs.local }}" /bin/sh -lc 'uname -m'
+        run: |
+          docker image inspect --format '{{json .Config.Cmd}}' "${{ steps.image.outputs.local }}" | grep -Fx '["/bin/bash"]'
+          docker run --rm --platform linux/loong64 "${{ steps.image.outputs.local }}" /bin/sh -lc 'command -v vim && uname -m'
 
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'
