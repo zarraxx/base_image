@@ -1,0 +1,97 @@
+name: Build Multi OpenJDK Image
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "openjdk/Dockerfile-multi-openjdk"
+      - ".github/workflows/build-multi-openjdk.yml"
+  pull_request:
+    paths:
+      - "openjdk/Dockerfile-multi-openjdk"
+      - ".github/workflows/build-multi-openjdk.yml"
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: openjdk
+  IMAGE_TAG: multi
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-multi-openjdk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: openjdk-multi-amd64
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: image
+        shell: bash
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "tag=${REGISTRY}/${owner}/${IMAGE_NAME}:${IMAGE_TAG}" >> "${GITHUB_OUTPUT}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build linux/amd64 image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: openjdk/Dockerfile-multi-openjdk
+          platforms: linux/amd64
+          load: true
+          tags: ${{ steps.image.outputs.tag }}
+          provenance: false
+          sbom: false
+          cache-from: type=gha,scope=multi-openjdk-amd64
+          cache-to: type=gha,mode=max,scope=multi-openjdk-amd64
+
+      - name: Smoke test image
+        shell: bash
+        run: |
+          test "$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "${{ steps.image.outputs.tag }}")" = "linux/amd64"
+
+          docker run --rm --platform linux/amd64 "${{ steps.image.outputs.tag }}" bash -lc '
+            set -euo pipefail
+
+            test "${JAVA_HOME}" = "/opt/java/openjdk-17"
+            java -version 2>&1 | grep -Eq "version \"17([.]|\")"
+            javac -version 2>&1 | grep -Eq "^javac 17([.]|$)"
+            mvn -version | grep -Eq "^Apache Maven 3[.]9[.]"
+
+            for version in 8 17 25; do
+              test -x "/opt/java/openjdk-${version}/bin/java"
+              test -x "/opt/java/openjdk-${version}/bin/javac"
+              "/opt/java/openjdk-${version}/bin/java" -version
+              "/opt/java/openjdk-${version}/bin/javac" -version
+            done
+
+            test "$(grep -c "<toolchain>" "${MAVEN_CONFIG}/toolchains.xml")" -eq 3
+            test "$(grep -c "<vendor>openjdk</vendor>" "${MAVEN_CONFIG}/toolchains.xml")" -eq 3
+          '
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_KEY }}
+
+      - name: Push image
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: docker push "${{ steps.image.outputs.tag }}"

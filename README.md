@@ -21,6 +21,7 @@ Debian 10、Debian 12 和 Debian 13 基础镜像默认命令为 `/bin/bash`，�
 | Ubuntu 26.04 | `ubuntu/Dockerfile` | Ubuntu Resolute 基础工具镜像 | `ghcr.io/zarraxx/ubuntu:26.04`、`ghcr.io/zarraxx/ubuntu:resolute` |
 | Loong64 OpenJDK Debian 包 | `openjdk/loong64/build.sh` | 将 Loongnix 官方 OpenJDK loongarch64 tarball 重打包为 Debian loong64 `.deb` | `openjdk-8-jdk`、`openjdk-11-jdk`、`openjdk-17-jdk`、`openjdk-21-jdk`、`openjdk-25-jdk` |
 | OpenJDK | `openjdk/Dockerfile`、`openjdk/loong64`、`openjdk/riscv64` | 基于 Ubuntu Resolute 构建主流架构 OpenJDK 8/11/17/21/25 镜像，mips64le、loong64 和 riscv64 JDK8 走专用构建路径 | `ghcr.io/zarraxx/openjdk:<version>`、`ghcr.io/zarraxx/openjdk:<version>-loong64` |
+| Multi OpenJDK | `openjdk/Dockerfile-multi-openjdk` | x86_64 Linux 镜像，同时提供 OpenJDK 8/17/25 和 Maven 3.9，默认使用 JDK 17，并配置 Maven JDK toolchains | `ghcr.io/zarraxx/openjdk:multi` |
 | Wine | `debian/12/wine/Dockerfile` | Debian 12 上的 Wine、wine32/wine64 和 Chromium `depot_tools` 环境 | `ghcr.io/zarraxx/wine:debian-12` |
 | Wine + MSVC | `debian/12/wine-msvc/Dockerfile` | 基于 Wine 镜像安装 `msvc-wine`、MSVC 和 Windows SDK | `registry.cn-hangzhou.aliyuncs.com/zarra/wine:msvc` |
 | Darling | `ubuntu/24.04/darling/Dockerfile` | Ubuntu 24.04 上安装 Darling deb 包，用于运行 macOS 用户态程序 | `ghcr.io/zarraxx/darling:noble-20260608` |
@@ -158,7 +159,10 @@ docker build -f debian/10/aliyun/Dockerfile -t local/debian:10-aliyun .
 docker build -f debian/13/Dockerfile -t local/debian:trixie .
 docker build -f ubuntu/Dockerfile --build-arg BASE_IMAGE=ubuntu:24.04 -t local/ubuntu:noble .
 docker build -f ubuntu/Dockerfile --build-arg BASE_IMAGE=ubuntu:26.04 -t local/ubuntu:resolute .
+docker build -f openjdk/Dockerfile-multi-openjdk -t local/openjdk:multi .
 ```
+
+`Dockerfile-multi-openjdk` 默认安装 Maven 3.9.16，可通过 `MAVEN_VERSION` 和对应的 `MAVEN_SHA512` build args 一起调整版本。镜像的 `JAVA_HOME` 指向 `/opt/java/openjdk-17`；Maven toolchains 配置位于 `/root/.m2/toolchains.xml`，可通过 vendor `openjdk` 和 version `8`、`17` 或 `25` 选择对应 JDK。
 
 带脚本的镜像建议进入对应目录执行：
 
@@ -211,6 +215,7 @@ CONTAINER_TOOL=podman IMAGE=ghcr.io/zarraxx/ubuntu:resolute ./test.sh
 | `ubuntu-24.04.yml` | Ubuntu 24.04 Noble 五架构镜像和 manifest | `ubuntu/Dockerfile`、`.github/workflows/ubuntu-24.04.yml` |
 | `ubuntu-26.04.yml` | Ubuntu 26.04 Resolute 五架构镜像和 manifest | `ubuntu/Dockerfile`、`.github/workflows/ubuntu-26.04.yml` |
 | `build-openjdk.yml` | OpenJDK 多架构镜像、loong64 镜像、riscv64 JDK8 镜像和专用 `.deb` Release | `openjdk/**`、`ubuntu/Dockerfile`、`debian/13/loong64/**` |
+| `build-multi-openjdk.yml` | 仅构建并发布 x86_64 Linux 的 OpenJDK 8/17/25 + Maven 3.9 镜像 | `openjdk/Dockerfile-multi-openjdk`、`.github/workflows/build-multi-openjdk.yml` |
 | `build-wine.yml` | Wine Debian 12 镜像 | `debian/12/wine/**` |
 | `build-wine-msvc.yml` | Wine + MSVC 镜像 | `debian/12/wine-msvc/**` |
 | `build-darling.yml` | Darling Ubuntu 24.04 镜像 | `ubuntu/24.04/darling/**` |
